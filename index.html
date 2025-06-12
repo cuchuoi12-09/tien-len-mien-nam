@@ -29,6 +29,13 @@
       flex-direction: column;
       align-items: center;
     }
+    .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      margin-bottom: 5px;
+      border: 2px solid white;
+    }
     .hand {
       display: flex;
       flex-wrap: wrap;
@@ -69,6 +76,7 @@
       cursor: pointer;
     }
     .name { font-weight: bold; margin-top: 5px; }
+    .pass-text { color: red; margin-top: 5px; height: 20px; }
   </style>
 </head>
 <body>
@@ -76,22 +84,30 @@
 
   <div class="table">
     <div class="player" style="grid-area: top;">
+      <img src="https://i.imgur.com/AXYx9Vu.png" class="avatar" />
       <div class="name">AI LINH</div>
+      <div class="pass-text" id="pass-top"></div>
       <div id="hand-top" class="hand"></div>
     </div>
     <div class="player" style="grid-area: left;">
+      <img src="https://i.imgur.com/4QfKuz1.png" class="avatar" />
       <div class="name">BOT MINH</div>
+      <div class="pass-text" id="pass-left"></div>
       <div id="hand-left" class="hand"></div>
     </div>
     <div class="player" style="grid-area: right;">
+      <img src="https://i.imgur.com/1ucg9Zt.png" class="avatar" />
       <div class="name">CHIP HÀ</div>
+      <div class="pass-text" id="pass-right"></div>
       <div id="hand-right" class="hand"></div>
     </div>
     <div class="player" style="grid-area: center;">
       <div id="center-played"></div>
     </div>
     <div class="player" style="grid-area: bottom;">
+      <img src="https://i.imgur.com/MV3WzGq.png" class="avatar" />
       <div class="name">BẠN</div>
+      <div class="pass-text" id="pass-bottom"></div>
       <div id="hand-bottom" class="hand"></div>
       <button onclick="playCards()">Đánh bài</button>
     </div>
@@ -108,13 +124,13 @@
         deck.push(rank + suit);
       }
     }
-    deck.sort(() => 0.5 - Math.random());
+    deck.sort(cardSort);
 
     const players = {
-      top: deck.slice(0, 13).sort(cardSort),
-      left: deck.slice(13, 26).sort(cardSort),
-      right: deck.slice(26, 39).sort(cardSort),
-      bottom: deck.slice(39, 52).sort(cardSort),
+      top: deck.slice(0, 13),
+      left: deck.slice(13, 26),
+      right: deck.slice(26, 39),
+      bottom: deck.slice(39, 52),
     };
 
     function cardSort(a, b) {
@@ -125,6 +141,8 @@
 
     function renderHand(id, isPlayer = false) {
       const handDiv = document.getElementById('hand-' + id);
+      const passDiv = document.getElementById('pass-' + id);
+      passDiv.innerText = '';
       handDiv.innerHTML = '';
       for (let card of players[id]) {
         const c = document.createElement('div');
@@ -191,8 +209,10 @@
         div.innerText = playedCard;
         center.appendChild(div);
 
-        document.getElementById('cardSound').play();
         lastPlayedCard = playedCard;
+        document.getElementById('cardSound').play();
+      } else {
+        document.getElementById('pass-' + id).innerText = 'QUA VÒNG';
       }
 
       currentTurn = (currentTurn + 1) % 4;
