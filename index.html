@@ -1,7 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tiến Lên Miền Nam – 4 Người Chơi</title>
+  .played {
+  display: inline-block;
+  min-width: 60px;
+  height: 90px;
+  background-color: white;
+  color: black;
+  border-radius: 6px;
+  padding: 8px;
+  font-weight: bold;
+  font-size: 20px;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  margin: 0 auto;
+}
+<title>Tiến Lên Miền Nam – 4 Người Chơi</title>
   <style>
     body {
       background-color: green;
@@ -76,7 +89,26 @@
   </style>
 </head>
 <body>
-  <div class="table">
+  <!-- Giữa bàn để hiển thị bài đã đánh -->
+<div class="center-area" style="grid-area: center; display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
+  <div style="text-align: center; margin: 10px;">
+    <div id="played-left" class="played"></div>
+    <div style="font-size: 14px;">Máy 2</div>
+  </div>
+  <div style="text-align: center; margin: 10px;">
+    <div id="played-top" class="played"></div>
+    <div style="font-size: 14px;">Máy 1</div>
+  </div>
+  <div style="text-align: center; margin: 10px;">
+    <div id="played-right" class="played"></div>
+    <div style="font-size: 14px;">Máy 3</div>
+  </div>
+  <div style="text-align: center; margin: 10px;">
+    <div id="played-bottom" class="played"></div>
+    <div style="font-size: 14px;">Bạn</div>
+  </div>
+</div>
+<div class="table">
     <div class="player" style="grid-area: top;">
       <div class="name">Máy 1</div>
       <div class="hand" id="hand-top"></div>
@@ -140,17 +172,6 @@
     renderHand('left', false);
     renderHand('right', false);
     renderHand('bottom', true);
-
-    function playCards() {
-      const selected = document.querySelectorAll('#hand-bottom .card.selected');
-      const cards = Array.from(selected).map(card => card.innerText);
-      if (cards.length === 0) {
-        alert("Bạn chưa chọn bài nào!");
-        return;
-      }
-      alert("Bạn đánh: " + cards.join(', '));
-    }
-  <script>
   const suits = ['♠', '♥', '♦', '♣'];
   const ranks = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
   let deck = [];
@@ -191,7 +212,7 @@
       }
       handDiv.appendChild(div);
     });
-  }
+document.getElementById('played-bottom').innerText = cards.join(', ');
 
   renderHand('top', false);
   renderHand('left', false);
@@ -199,6 +220,27 @@
   renderHand('bottom', true);
 
   function playCards() {
+  const selected = document.querySelectorAll('#hand-bottom .card.selected');
+  const cards = Array.from(selected).map(card => card.innerText);
+  if (cards.length === 0) {
+    alert("Bạn chưa chọn bài nào!");
+    return;
+  }
+
+  alert("Bạn đánh: " + cards.join(', '));
+
+  // Xóa bài đã đánh khỏi tay
+  players.bottom = players.bottom.filter(card => !cards.includes(card));
+  renderHand('bottom', true);
+renderHand('bottom', true);
+document.getElementById('played-bottom').innerText = cards.join(', ');
+  // Chèn thêm dòng mới ngay dưới đây
+
+  // Chuyển lượt sang máy
+  currentTurn = 1;
+  setTimeout(machinePlay, 1500);
+}
+ {
     const selected = document.querySelectorAll('#hand-bottom .card.selected');
     const cards = Array.from(selected).map(card => card.innerText);
     if (cards.length === 0) {
@@ -215,29 +257,35 @@
     setTimeout(machinePlay, 1500);
   }
 
-  function machinePlay() {
-    const playerId = turnOrder[currentTurn];
-    const hand = players[playerId];
+ function machinePlay() {
+  const playerId = turnOrder[currentTurn];
+  const hand = players[playerId];
 
-    if (hand.length === 0) {
-      currentTurn = (currentTurn + 1) % 4;
-      setTimeout(machinePlay, 1000);
-      return;
-    }
-
-    // Giả lập: chọn bài đầu tiên
-    const selectedCard = hand[0];
-    console.log(`💻 Máy ${playerId} đánh: ${selectedCard}`);
-
-    // Xoá khỏi tay máy
-    players[playerId] = hand.slice(1);
-
-    // Hiện bài máy trên console (sau này ta sẽ hiện trực tiếp)
+  if (hand.length === 0) {
     currentTurn = (currentTurn + 1) % 4;
+    setTimeout(machinePlay, 1000);
+    return;
+  }
 
-    if (playerId !== 'bottom') {
-      setTimeout(machinePlay, 1500);
-    }
+  // Giả lập: chọn bài đầu tiên
+  const selectedCard = hand[0];
+  console.log(`💻 Máy ${playerId} đánh: ${selectedCard}`);
+
+  // 👉 Hiện bài ra giữa bàn
+  document.getElementById(`played-${playerId}`).innerText = selectedCard;
+
+  // Xoá khỏi tay máy
+  players[playerId] = hand.slice(1);
+
+  // Hiện bài trên console
+  currentTurn = (currentTurn + 1) % 4;
+
+  if (playerId !== 'bottom') {
+    setTimeout(machinePlay, 1500);
+  }
+}
+
+    
   }
 </script>
 </body>
