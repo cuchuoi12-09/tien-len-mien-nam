@@ -1,153 +1,154 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tiến Lên Miền Nam</title>
+  <title>Tiến Lên Miền Nam – 4 Người Chơi</title>
   <style>
     body {
-      background: linear-gradient(to bottom, #1b5e20, #2e7d32);
+      background-color: green;
+      font-family: Arial, sans-serif;
       color: white;
-      font-family: 'Arial', sans-serif;
       margin: 0;
       padding: 0;
-      text-align: center;
     }
-    header {
-      background-color: #004d40;
-      padding: 10px 0;
-    }
-    h1 {
-      margin: 10px 0;
-    }
-    .avatar {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      border: 2px solid white;
-    }
-    .player-info {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .table {
+      display: grid;
+      grid-template-areas:
+        "left top right"
+        "left center right"
+        "bottom bottom bottom";
+      grid-template-rows: 1fr 2fr 1fr;
+      grid-template-columns: 1fr 2fr 1fr;
+      height: 100vh;
+      padding: 10px;
       gap: 10px;
-      margin-top: 10px;
+    }
+    .player {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .player .name {
+      margin: 5px 0;
+      font-weight: bold;
     }
     .hand {
       display: flex;
-      justify-content: center;
       flex-wrap: wrap;
-      margin: 30px auto;
-      max-width: 90%;
+      justify-content: center;
     }
     .card {
-      width: 80px;
-      height: 120px;
+      width: 60px;
+      height: 90px;
       background-color: white;
       color: black;
-      border-radius: 8px;
-      margin: 5px;
-      font-size: 22px;
-      font-weight: bold;
+      border-radius: 6px;
+      margin: 3px;
       display: flex;
       justify-content: center;
       align-items: center;
+      font-weight: bold;
       cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
     }
-    .card:hover {
-      transform: scale(1.05);
+    .card.back {
+      background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Card_back_01.svg/120px-Card_back_01.svg.png') no-repeat center/cover;
+      color: transparent;
     }
-    .selected {
+    .bottom-player .card:hover {
+      transform: translateY(-10px);
+    }
+    .bottom-player .card.selected {
       transform: translateY(-20px);
-      box-shadow: 0 0 10px yellow;
+      box-shadow: 0 0 8px yellow;
     }
     button {
-      background-color: #ff5722;
-      color: white;
-      font-size: 18px;
-      padding: 10px 20px;
+      margin-top: 10px;
+      padding: 8px 16px;
+      font-size: 16px;
+      background: orange;
+      color: black;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background 0.2s;
     }
     button:hover {
-      background-color: #e64a19;
-    }
-    #result {
-      margin-top: 20px;
-      font-size: 20px;
-      font-weight: bold;
-      color: yellow;
-    }
-    audio {
-      display: none;
+      background: darkorange;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🎴 Tiến Lên Miền Nam 🎴</h1>
-    <div class="player-info">
-      <img src="https://i.imgur.com/5cX1vIU.png" class="avatar" />
-      <div><strong>Người chơi: Bạn</strong></div>
+  <div class="table">
+    <div class="player" style="grid-area: top;">
+      <div class="name">Máy 1</div>
+      <div class="hand" id="hand-top"></div>
     </div>
-  </header>
-
-  <div class="hand" id="playerHand"></div>
-  <button onclick="playCards()">🃏 Đánh bài</button>
-  <div id="result"></div>
-
-  <audio autoplay loop>
-    <source src="https://www.bensound.com/bensound-music/bensound-sunny.mp3" type="audio/mpeg">
-  </audio>
+    <div class="player" style="grid-area: left;">
+      <div class="name">Máy 2</div>
+      <div class="hand" id="hand-left"></div>
+    </div>
+    <div class="player" style="grid-area: right;">
+      <div class="name">Máy 3</div>
+      <div class="hand" id="hand-right"></div>
+    </div>
+    <div class="player bottom-player" style="grid-area: bottom;">
+      <div class="name">Bạn</div>
+      <div class="hand" id="hand-bottom"></div>
+      <button onclick="playCards()">Đánh bài</button>
+    </div>
+  </div>
 
   <script>
     const suits = ['♠', '♥', '♦', '♣'];
     const ranks = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
     let deck = [];
+
+    // Tạo bộ bài
     for (let suit of suits) {
       for (let rank of ranks) {
         deck.push(`${rank}${suit}`);
       }
     }
+
     deck.sort(() => 0.5 - Math.random());
-    const playerHand = deck.slice(0, 13).sort();
 
-    const handDiv = document.getElementById('playerHand');
-    playerHand.forEach(card => {
-      const cardDiv = document.createElement('div');
-      cardDiv.className = 'card';
-      cardDiv.innerText = card;
-      cardDiv.dataset.card = card;
-      cardDiv.addEventListener('click', () => {
-        cardDiv.classList.toggle('selected');
+    const players = {
+      top: deck.slice(0, 13),
+      left: deck.slice(13, 26),
+      right: deck.slice(26, 39),
+      bottom: deck.slice(39, 52).sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)))
+    };
+
+    function renderHand(playerId, isPlayer) {
+      const handDiv = document.getElementById(`hand-${playerId}`);
+      handDiv.innerHTML = "";
+      players[playerId].forEach(card => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        if (isPlayer) {
+          div.innerText = card;
+          div.addEventListener('click', () => {
+            div.classList.toggle('selected');
+          });
+        } else {
+          div.classList.add('back');
+          div.innerText = 'X';
+        }
+        handDiv.appendChild(div);
       });
-      handDiv.appendChild(cardDiv);
-    });
-
-    function playCards() {
-      const selectedCards = Array.from(document.querySelectorAll('.card.selected')).map(el => el.dataset.card);
-      if (selectedCards.length === 0) {
-        document.getElementById('result').innerText = '❌ Bạn chưa chọn lá bài nào!';
-        return;
-      }
-
-      const result = checkPlay(selectedCards);
-      document.getElementById('result').innerText = `✅ Bạn đánh: [${selectedCards.join(', ')}] → ${result}`;
     }
 
-    // Kiểm tra đơn giản luật cơ bản
-    function checkPlay(cards) {
-      if (cards.length === 1) return 'Bài rác';
-      if (cards.length === 2 && cards[0].slice(0, -1) === cards[1].slice(0, -1)) return 'Một đôi';
-      if (cards.length === 3 &&
-          cards.every(c => c.slice(0, -1) === cards[0].slice(0, -1))) return 'Ba lá';
-      // Sảnh
-      const values = cards.map(c => ranks.indexOf(c.slice(0, -1))).sort((a, b) => a - b);
-      const isSequence = values.every((v, i, a) => i === 0 || v === a[i - 1] + 1);
-      if (cards.length >= 3 && isSequence) return 'Một sảnh';
-      return 'Bộ bài không hợp lệ';
+    renderHand('top', false);
+    renderHand('left', false);
+    renderHand('right', false);
+    renderHand('bottom', true);
+
+    function playCards() {
+      const selected = document.querySelectorAll('#hand-bottom .card.selected');
+      const cards = Array.from(selected).map(card => card.innerText);
+      if (cards.length === 0) {
+        alert("Bạn chưa chọn bài nào!");
+        return;
+      }
+      alert("Bạn đánh: " + cards.join(', '));
     }
   </script>
 </body>
