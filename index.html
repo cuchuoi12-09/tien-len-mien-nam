@@ -1,18 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Game Tiến Lên</title>
+  <title>Tiến Lên Miền Nam</title>
   <style>
     body {
-      background-color: green;
-      text-align: center;
+      background: linear-gradient(to bottom, #1b5e20, #2e7d32);
       color: white;
-      font-family: Arial;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background-color: #004d40;
+      padding: 10px 0;
+    }
+    h1 {
+      margin: 10px 0;
+    }
+    .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 2px solid white;
+    }
+    .player-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
     }
     .hand {
       display: flex;
       justify-content: center;
-      margin-top: 50px;
+      flex-wrap: wrap;
+      margin: 30px auto;
+      max-width: 90%;
     }
     .card {
       width: 80px;
@@ -20,36 +44,74 @@
       background-color: white;
       color: black;
       border-radius: 8px;
-      margin: 0 5px;
-      font-size: 24px;
+      margin: 5px;
+      font-size: 22px;
+      font-weight: bold;
       display: flex;
       justify-content: center;
       align-items: center;
       cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    }
+    .card:hover {
+      transform: scale(1.05);
+    }
+    .selected {
+      transform: translateY(-20px);
+      box-shadow: 0 0 10px yellow;
+    }
+    button {
+      background-color: #ff5722;
+      color: white;
+      font-size: 18px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background-color: #e64a19;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      color: yellow;
+    }
+    audio {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h1>Tiến Lên Miền Nam</h1>
-  <div class="hand" id="playerHand">
-  </div>
+  <header>
+    <h1>🎴 Tiến Lên Miền Nam 🎴</h1>
+    <div class="player-info">
+      <img src="https://i.imgur.com/5cX1vIU.png" class="avatar" />
+      <div><strong>Người chơi: Bạn</strong></div>
+    </div>
+  </header>
+
+  <div class="hand" id="playerHand"></div>
+  <button onclick="playCards()">🃏 Đánh bài</button>
+  <div id="result"></div>
+
+  <audio autoplay loop>
+    <source src="https://www.bensound.com/bensound-music/bensound-sunny.mp3" type="audio/mpeg">
+  </audio>
 
   <script>
     const suits = ['♠', '♥', '♦', '♣'];
     const ranks = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
     let deck = [];
-
-    // Tạo bộ bài
     for (let suit of suits) {
       for (let rank of ranks) {
         deck.push(`${rank}${suit}`);
       }
     }
-
-    // Xáo bài
     deck.sort(() => 0.5 - Math.random());
-
-    // Chia 13 lá
     const playerHand = deck.slice(0, 13).sort();
 
     const handDiv = document.getElementById('playerHand');
@@ -57,8 +119,36 @@
       const cardDiv = document.createElement('div');
       cardDiv.className = 'card';
       cardDiv.innerText = card;
+      cardDiv.dataset.card = card;
+      cardDiv.addEventListener('click', () => {
+        cardDiv.classList.toggle('selected');
+      });
       handDiv.appendChild(cardDiv);
     });
+
+    function playCards() {
+      const selectedCards = Array.from(document.querySelectorAll('.card.selected')).map(el => el.dataset.card);
+      if (selectedCards.length === 0) {
+        document.getElementById('result').innerText = '❌ Bạn chưa chọn lá bài nào!';
+        return;
+      }
+
+      const result = checkPlay(selectedCards);
+      document.getElementById('result').innerText = `✅ Bạn đánh: [${selectedCards.join(', ')}] → ${result}`;
+    }
+
+    // Kiểm tra đơn giản luật cơ bản
+    function checkPlay(cards) {
+      if (cards.length === 1) return 'Bài rác';
+      if (cards.length === 2 && cards[0].slice(0, -1) === cards[1].slice(0, -1)) return 'Một đôi';
+      if (cards.length === 3 &&
+          cards.every(c => c.slice(0, -1) === cards[0].slice(0, -1))) return 'Ba lá';
+      // Sảnh
+      const values = cards.map(c => ranks.indexOf(c.slice(0, -1))).sort((a, b) => a - b);
+      const isSequence = values.every((v, i, a) => i === 0 || v === a[i - 1] + 1);
+      if (cards.length >= 3 && isSequence) return 'Một sảnh';
+      return 'Bộ bài không hợp lệ';
+    }
   </script>
 </body>
 </html>
