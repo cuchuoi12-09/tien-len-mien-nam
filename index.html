@@ -117,27 +117,43 @@
     const suits = ['♠', '♥', '♦', '♣'];
     const ranks = ['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
     let deck = [];
-    let lastPlayedCard = null;
 
-    for (let suit of suits) {
-      for (let rank of ranks) {
+    for (let rank of ranks) {
+      for (let suit of suits) {
         deck.push(rank + suit);
       }
     }
-    deck.sort(cardSort);
 
-    const players = {
-      top: deck.slice(0, 13),
-      left: deck.slice(13, 26),
-      right: deck.slice(26, 39),
-      bottom: deck.slice(39, 52),
-    };
+    // Sắp xếp bộ bài từ yếu đến mạnh
+    deck.sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)));
+
+    // Tạo bộ bài đều: xen kẽ 1 yếu 1 mạnh
+    let orderedDeck = [];
+    let mid = Math.floor(deck.length / 2);
+    for (let i = 0; i < mid; i++) {
+      orderedDeck.push(deck[i]);
+      orderedDeck.push(deck[deck.length - 1 - i]);
+    }
+
+    let players = { top: [], left: [], right: [], bottom: [] };
+    for (let i = 0; i < orderedDeck.length; i++) {
+      const who = ['top', 'left', 'right', 'bottom'][i % 4];
+      players[who].push(orderedDeck[i]);
+    }
 
     function cardSort(a, b) {
       const ra = ranks.indexOf(a.slice(0, -1));
       const rb = ranks.indexOf(b.slice(0, -1));
       return ra - rb;
     }
+
+    for (let id of ['top', 'left', 'right', 'bottom']) {
+      players[id].sort(cardSort);
+    }
+
+    let lastPlayedCard = null;
+    let turnOrder = ['bottom', 'top', 'left', 'right'];
+    let currentTurn = 0;
 
     function renderHand(id, isPlayer = false) {
       const handDiv = document.getElementById('hand-' + id);
@@ -158,12 +174,9 @@
     function playCards() {
       const selected = Array.from(document.querySelectorAll('#hand-bottom .card.selected'));
       if (selected.length === 0) return;
-
       const cards = selected.map(c => c.innerText);
-
       players.bottom = players.bottom.filter(c => !cards.includes(c));
       renderHand('bottom', true);
-
       const center = document.getElementById('center-played');
       center.innerHTML = '';
       for (let card of cards) {
@@ -172,24 +185,17 @@
         div.innerText = card;
         center.appendChild(div);
       }
-
       lastPlayedCard = cards[cards.length - 1];
-
       document.getElementById('cardSound').play();
-
       currentTurn = 1;
       setTimeout(machinePlay, 1500);
     }
-
-    let turnOrder = ['bottom', 'top', 'left', 'right'];
-    let currentTurn = 0;
 
     function machinePlay() {
       if (currentTurn === 0) return;
       const id = turnOrder[currentTurn];
       const hand = players[id];
       if (hand.length === 0) return;
-
       let playedCard = null;
       for (let card of hand) {
         if (!lastPlayedCard || compareCard(card, lastPlayedCard) > 0) {
@@ -197,24 +203,20 @@
           break;
         }
       }
-
       if (playedCard) {
         players[id] = hand.filter(c => c !== playedCard);
         renderHand(id);
-
         const center = document.getElementById('center-played');
         center.innerHTML = '';
         const div = document.createElement('div');
         div.className = 'card';
         div.innerText = playedCard;
         center.appendChild(div);
-
-        lastPlayedCard = playedCard;
         document.getElementById('cardSound').play();
+        lastPlayedCard = playedCard;
       } else {
         document.getElementById('pass-' + id).innerText = 'QUA VÒNG';
       }
-
       currentTurn = (currentTurn + 1) % 4;
       if (turnOrder[currentTurn] !== 'bottom') {
         setTimeout(machinePlay, 1500);
