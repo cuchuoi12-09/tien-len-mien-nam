@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Game Tiến Lên</title>
+  <style>
+    body {
+      background-color: green;
+      text-align: center;
+      color: white;
+      font-family: Arial;
+    }
+    .hand {
+      display: flex;
+      justify-content: center;
+      margin-top: 50px;
+    }
+    .card {
+      width: 80px;
+      height: 120px;
+      background-color: white;
+      color: black;
+      border-radius: 8px;
+      margin: 0 5px;
+      font-size: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tiến Lên Miền Nam</h1>
+  <div class="hand" id="playerHand">
+  </div>
+
+  <script>
+    const suits = ['♠', '♥', '♦', '♣'];
+    const ranks = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
+    let deck = [];
+
+    // Tạo bộ bài
+    for (let suit of suits) {
+      for (let rank of ranks) {
+        deck.push(`${rank}${suit}`);
+      }
+    }
+
+    // Xáo bài
+    deck.sort(() => 0.5 - Math.random());
+
+    // Chia 13 lá
+    const playerHand = deck.slice(0, 13).sort();
+
+    const handDiv = document.getElementById('playerHand');
+    playerHand.forEach(card => {
+      const cardDiv = document.createElement('div');
+      cardDiv.className = 'card';
+      cardDiv.innerText = card;
+      handDiv.appendChild(cardDiv);
+    });
+  </script>
+</body>
+</html>
