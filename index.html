@@ -1,20 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  .played {
-  display: inline-block;
-  min-width: 60px;
-  height: 90px;
-  background-color: white;
-  color: black;
-  border-radius: 6px;
-  padding: 8px;
-  font-weight: bold;
-  font-size: 20px;
-  box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-  margin: 0 auto;
-}
-<title>Tiến Lên Miền Nam – 4 Người Chơi</title>
+  <meta charset="UTF-8">
+  <title>Tiến Lên Miền Nam - 4 Người Chơi</title>
   <style>
     body {
       background-color: green;
@@ -32,17 +20,13 @@
       grid-template-rows: 1fr 2fr 1fr;
       grid-template-columns: 1fr 2fr 1fr;
       height: 100vh;
-      padding: 10px;
       gap: 10px;
+      padding: 10px;
     }
     .player {
       display: flex;
       flex-direction: column;
       align-items: center;
-    }
-    .player .name {
-      margin: 5px 0;
-      font-weight: bold;
     }
     .hand {
       display: flex;
@@ -73,110 +57,67 @@
       transform: translateY(-20px);
       box-shadow: 0 0 8px yellow;
     }
+    .played {
+      display: inline-block;
+      min-width: 60px;
+      height: 90px;
+      background-color: white;
+      color: black;
+      border-radius: 6px;
+      padding: 8px;
+      font-weight: bold;
+      font-size: 20px;
+      box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      margin: 0 auto;
+    }
     button {
       margin-top: 10px;
       padding: 8px 16px;
       font-size: 16px;
       background: orange;
-      color: black;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-    }
-    button:hover {
-      background: darkorange;
+      color: black;
     }
   </style>
 </head>
 <body>
-  <!-- Giữa bàn để hiển thị bài đã đánh -->
-<div class="center-area" style="grid-area: center; display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
-  <div style="text-align: center; margin: 10px;">
-    <div id="played-left" class="played"></div>
-    <div style="font-size: 14px;">Máy 2</div>
+
+<!-- Khu vực hiển thị bài đã đánh -->
+<div style="grid-area: center; display: flex; justify-content: center; align-items: center;">
+  <div id="played-top" class="played"></div>
+  <div id="played-left" class="played"></div>
+  <div id="played-right" class="played"></div>
+  <div id="played-bottom" class="played"></div>
+</div>
+
+<!-- Bàn chơi 4 người -->
+<div class="table">
+  <div class="player" style="grid-area: top;">
+    <div class="name">Máy 1</div>
+    <div class="hand" id="hand-top"></div>
   </div>
-  <div style="text-align: center; margin: 10px;">
-    <div id="played-top" class="played"></div>
-    <div style="font-size: 14px;">Máy 1</div>
+  <div class="player" style="grid-area: left;">
+    <div class="name">Máy 2</div>
+    <div class="hand" id="hand-left"></div>
   </div>
-  <div style="text-align: center; margin: 10px;">
-    <div id="played-right" class="played"></div>
-    <div style="font-size: 14px;">Máy 3</div>
+  <div class="player" style="grid-area: right;">
+    <div class="name">Máy 3</div>
+    <div class="hand" id="hand-right"></div>
   </div>
-  <div style="text-align: center; margin: 10px;">
-    <div id="played-bottom" class="played"></div>
-    <div style="font-size: 14px;">Bạn</div>
+  <div class="player bottom-player" style="grid-area: bottom;">
+    <div class="name">Bạn</div>
+    <div class="hand" id="hand-bottom"></div>
+    <button onclick="playCards()">Đánh bài</button>
   </div>
 </div>
-<div class="table">
-    <div class="player" style="grid-area: top;">
-      <div class="name">Máy 1</div>
-      <div class="hand" id="hand-top"></div>
-    </div>
-    <div class="player" style="grid-area: left;">
-      <div class="name">Máy 2</div>
-      <div class="hand" id="hand-left"></div>
-    </div>
-    <div class="player" style="grid-area: right;">
-      <div class="name">Máy 3</div>
-      <div class="hand" id="hand-right"></div>
-    </div>
-    <div class="player bottom-player" style="grid-area: bottom;">
-      <div class="name">Bạn</div>
-      <div class="hand" id="hand-bottom"></div>
-      <button onclick="playCards()">Đánh bài</button>
-    </div>
-  </div>
 
-  <script>
-    const suits = ['♠', '♥', '♦', '♣'];
-    const ranks = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
-    let deck = [];
-
-    // Tạo bộ bài
-    for (let suit of suits) {
-      for (let rank of ranks) {
-        deck.push(`${rank}${suit}`);
-      }
-    }
-
-    deck.sort(() => 0.5 - Math.random());
-
-    const players = {
-      top: deck.slice(0, 13),
-      left: deck.slice(13, 26),
-      right: deck.slice(26, 39),
-      bottom: deck.slice(39, 52).sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)))
-    };
-
-    function renderHand(playerId, isPlayer) {
-      const handDiv = document.getElementById(`hand-${playerId}`);
-      handDiv.innerHTML = "";
-      players[playerId].forEach(card => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        if (isPlayer) {
-          div.innerText = card;
-          div.addEventListener('click', () => {
-            div.classList.toggle('selected');
-          });
-        } else {
-          div.classList.add('back');
-          div.innerText = 'X';
-        }
-        handDiv.appendChild(div);
-      });
-    }
-
-    renderHand('top', false);
-    renderHand('left', false);
-    renderHand('right', false);
-    renderHand('bottom', true);
+<script>
   const suits = ['♠', '♥', '♦', '♣'];
   const ranks = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
   let deck = [];
 
-  // Tạo bộ bài
   for (let suit of suits) {
     for (let rank of ranks) {
       deck.push(`${rank}${suit}`);
@@ -195,98 +136,65 @@
   const turnOrder = ['bottom', 'left', 'top', 'right'];
   let currentTurn = 0;
 
-  function renderHand(playerId, isPlayer) {
+  function renderHand(playerId, isPlayer = false) {
     const handDiv = document.getElementById(`hand-${playerId}`);
-    handDiv.innerHTML = "";
+    handDiv.innerHTML = '';
     players[playerId].forEach(card => {
       const div = document.createElement('div');
       div.className = 'card';
       if (isPlayer) {
         div.innerText = card;
-        div.addEventListener('click', () => {
-          div.classList.toggle('selected');
-        });
+        div.addEventListener('click', () => div.classList.toggle('selected'));
       } else {
         div.classList.add('back');
         div.innerText = 'X';
       }
       handDiv.appendChild(div);
     });
-document.getElementById('played-bottom').innerText = cards.join(', ');
+  }
 
-  renderHand('top', false);
-  renderHand('left', false);
-  renderHand('right', false);
+  renderHand('top');
+  renderHand('left');
+  renderHand('right');
   renderHand('bottom', true);
 
   function playCards() {
-  const selected = document.querySelectorAll('#hand-bottom .card.selected');
-  const cards = Array.from(selected).map(card => card.innerText);
-  if (cards.length === 0) {
-    alert("Bạn chưa chọn bài nào!");
-    return;
-  }
-
-  alert("Bạn đánh: " + cards.join(', '));
-
-  // Xóa bài đã đánh khỏi tay
-  players.bottom = players.bottom.filter(card => !cards.includes(card));
-  renderHand('bottom', true);
-renderHand('bottom', true);
-document.getElementById('played-bottom').innerText = cards.join(', ');
-  // Chèn thêm dòng mới ngay dưới đây
-
-  // Chuyển lượt sang máy
-  currentTurn = 1;
-  setTimeout(machinePlay, 1500);
-}
- {
     const selected = document.querySelectorAll('#hand-bottom .card.selected');
-    const cards = Array.from(selected).map(card => card.innerText);
-    if (cards.length === 0) {
-      alert("Bạn chưa chọn bài nào!");
-      return;
-    }
-    alert("Bạn đánh: " + cards.join(', '));
-    // Xóa bài đã đánh khỏi tay
+    const cards = Array.from(selected).map(c => c.innerText);
+    if (cards.length === 0) return alert("Bạn chưa chọn bài nào!");
+
+    alert("🂠 Bạn đánh: " + cards.join(', '));
+
     players.bottom = players.bottom.filter(card => !cards.includes(card));
     renderHand('bottom', true);
+    document.getElementById('played-bottom').innerText = cards.join(', ');
 
-    // Chuyển lượt sang máy
     currentTurn = 1;
     setTimeout(machinePlay, 1500);
   }
 
- function machinePlay() {
-  const playerId = turnOrder[currentTurn];
-  const hand = players[playerId];
+  function machinePlay() {
+    const playerId = turnOrder[currentTurn];
+    const hand = players[playerId];
+    if (hand.length === 0) {
+      currentTurn = (currentTurn + 1) % 4;
+      setTimeout(machinePlay, 1000);
+      return;
+    }
 
-  if (hand.length === 0) {
+    const selectedCard = hand[0];
+    console.log(`🂠 Máy ${playerId} đánh: ${selectedCard}`);
+    players[playerId] = hand.slice(1);
+    document.getElementById(`played-${playerId}`).innerText = selectedCard;
+
+    renderHand(playerId);
+
     currentTurn = (currentTurn + 1) % 4;
-    setTimeout(machinePlay, 1000);
-    return;
-  }
-
-  // Giả lập: chọn bài đầu tiên
-  const selectedCard = hand[0];
-  console.log(`💻 Máy ${playerId} đánh: ${selectedCard}`);
-
-  // 👉 Hiện bài ra giữa bàn
-  document.getElementById(`played-${playerId}`).innerText = selectedCard;
-
-  // Xoá khỏi tay máy
-  players[playerId] = hand.slice(1);
-
-  // Hiện bài trên console
-  currentTurn = (currentTurn + 1) % 4;
-
-  if (playerId !== 'bottom') {
-    setTimeout(machinePlay, 1500);
-  }
-}
-
-    
+    if (playerId !== 'bottom') {
+      setTimeout(machinePlay, 1500);
+    }
   }
 </script>
+
 </body>
 </html>
