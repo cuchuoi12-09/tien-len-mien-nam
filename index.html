@@ -2,22 +2,21 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Tiến Lên Miền Nam - 4 Người Chơi</title>
+  <title>Tiến Lên L\xean Miền Nam - 4 Người Chơi</title>
   <style>
     body {
-      background-color: green;
-      font-family: Arial, sans-serif;
-      color: white;
       margin: 0;
-      padding: 0;
+      font-family: Arial;
+      background-color: green;
+      color: white;
     }
     .table {
       display: grid;
       grid-template-areas:
-        "left top right"
+        "top top top"
         "left center right"
         "bottom bottom bottom";
-      grid-template-rows: 1fr 2fr 1fr;
+      grid-template-rows: 1fr 3fr 1fr;
       grid-template-columns: 1fr 2fr 1fr;
       height: 100vh;
       gap: 10px;
@@ -36,7 +35,7 @@
     .card {
       width: 60px;
       height: 90px;
-      background-color: white;
+      background: white;
       color: black;
       border-radius: 6px;
       margin: 3px;
@@ -46,155 +45,114 @@
       font-weight: bold;
       cursor: pointer;
     }
+    .card.selected {
+      transform: translateY(-20px);
+      box-shadow: 0 0 8px yellow;
+    }
     .card.back {
       background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Card_back_01.svg/120px-Card_back_01.svg.png') no-repeat center/cover;
       color: transparent;
     }
-    .bottom-player .card:hover {
-      transform: translateY(-10px);
-    }
-    .bottom-player .card.selected {
-      transform: translateY(-20px);
-      box-shadow: 0 0 8px yellow;
-    }
-    .played {
-      display: inline-block;
-      min-width: 60px;
-      height: 90px;
-      background-color: white;
-      color: black;
-      border-radius: 6px;
-      padding: 8px;
-      font-weight: bold;
-      font-size: 20px;
-      box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-      margin: 0 auto;
+    #played-cards {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 24px;
+      margin-bottom: 10px;
     }
     button {
-      margin-top: 10px;
-      padding: 8px 16px;
-      font-size: 16px;
+      padding: 10px 20px;
+      font-size: 18px;
       background: orange;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
-      color: black;
     }
   </style>
 </head>
 <body>
-
-<!-- Khu vực hiển thị bài đã đánh -->
-<div style="grid-area: center; display: flex; justify-content: center; align-items: center;">
-  <div id="played-top" class="played"></div>
-  <div id="played-left" class="played"></div>
-  <div id="played-right" class="played"></div>
-  <div id="played-bottom" class="played"></div>
-</div>
-
-<!-- Bàn chơi 4 người -->
-<div class="table">
-  <div class="player" style="grid-area: top;">
-    <div class="name">Máy 1</div>
-    <div class="hand" id="hand-top"></div>
+  <div id="played-cards"></div>
+  <div class="table">
+    <div class="player" style="grid-area: top;">
+      <div>Máy 1</div>
+      <div class="hand" id="hand-top"></div>
+    </div>
+    <div class="player" style="grid-area: left;">
+      <div>Máy 2</div>
+      <div class="hand" id="hand-left"></div>
+    </div>
+    <div class="player" style="grid-area: right;">
+      <div>Máy 3</div>
+      <div class="hand" id="hand-right"></div>
+    </div>
+    <div class="player" style="grid-area: bottom;">
+      <div>Bạn</div>
+      <div class="hand" id="hand-bottom"></div>
+      <button onclick="playCards()">Đánh bài</button>
+    </div>
   </div>
-  <div class="player" style="grid-area: left;">
-    <div class="name">Máy 2</div>
-    <div class="hand" id="hand-left"></div>
-  </div>
-  <div class="player" style="grid-area: right;">
-    <div class="name">Máy 3</div>
-    <div class="hand" id="hand-right"></div>
-  </div>
-  <div class="player bottom-player" style="grid-area: bottom;">
-    <div class="name">Bạn</div>
-    <div class="hand" id="hand-bottom"></div>
-    <button onclick="playCards()">Đánh bài</button>
-  </div>
-</div>
 
 <script>
-  const suits = ['♠', '♥', '♦', '♣'];
-  const ranks = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
-  let deck = [];
+const suits = ['♠', '♥', '♦', '♣'];
+const ranks = ['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
+let deck = [];
+for (let s of suits) for (let r of ranks) deck.push(r + s);
+deck.sort(() => Math.random() - 0.5);
 
-  for (let suit of suits) {
-    for (let rank of ranks) {
-      deck.push(`${rank}${suit}`);
+const players = {
+  top: deck.slice(0, 13),
+  left: deck.slice(13, 26),
+  right: deck.slice(26, 39),
+  bottom: deck.slice(39, 52)
+};
+
+const turnOrder = ['bottom', 'left', 'top', 'right'];
+let currentTurn = 0;
+
+function renderHand(player, isPlayer = false) {
+  const div = document.getElementById('hand-' + player);
+  div.innerHTML = '';
+  players[player].forEach(card => {
+    const c = document.createElement('div');
+    c.className = 'card' + (!isPlayer ? ' back' : '');
+    if (isPlayer) {
+      c.innerText = card;
+      c.onclick = () => c.classList.toggle('selected');
     }
-  }
+    div.appendChild(c);
+  });
+}
 
-  deck.sort(() => 0.5 - Math.random());
+function updatePlayed(player, card) {
+  document.getElementById('played-cards').innerText = `${player}: ${card}`;
+}
 
-  const players = {
-    top: deck.slice(0, 13),
-    left: deck.slice(13, 26),
-    right: deck.slice(26, 39),
-    bottom: deck.slice(39, 52).sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)))
-  };
-
-  const turnOrder = ['bottom', 'left', 'top', 'right'];
-  let currentTurn = 0;
-
-  function renderHand(playerId, isPlayer = false) {
-    const handDiv = document.getElementById(`hand-${playerId}`);
-    handDiv.innerHTML = '';
-    players[playerId].forEach(card => {
-      const div = document.createElement('div');
-      div.className = 'card';
-      if (isPlayer) {
-        div.innerText = card;
-        div.addEventListener('click', () => div.classList.toggle('selected'));
-      } else {
-        div.classList.add('back');
-        div.innerText = 'X';
-      }
-      handDiv.appendChild(div);
-    });
-  }
-
-  renderHand('top');
-  renderHand('left');
-  renderHand('right');
+function playCards() {
+  const selected = Array.from(document.querySelectorAll('#hand-bottom .selected'));
+  if (selected.length === 0) return alert("Chọn bài trước!");
+  const cards = selected.map(c => c.innerText);
+  alert("Bạn đánh: " + cards.join(', '));
+  players.bottom = players.bottom.filter(c => !cards.includes(c));
   renderHand('bottom', true);
+  updatePlayed('Bạn', cards.join(', '));
+  currentTurn = 1;
+  setTimeout(machinePlay, 1500);
+}
 
-  function playCards() {
-    const selected = document.querySelectorAll('#hand-bottom .card.selected');
-    const cards = Array.from(selected).map(c => c.innerText);
-    if (cards.length === 0) return alert("Bạn chưa chọn bài nào!");
+function machinePlay() {
+  const playerId = turnOrder[currentTurn];
+  const hand = players[playerId];
+  if (hand.length === 0) return;
+  const card = hand[0];
+  updatePlayed(playerId, card);
+  players[playerId] = hand.slice(1);
+  renderHand(playerId);
+  currentTurn = (currentTurn + 1) % 4;
+  if (playerId !== 'bottom') setTimeout(machinePlay, 1500);
+}
 
-    alert("🂠 Bạn đánh: " + cards.join(', '));
-
-    players.bottom = players.bottom.filter(card => !cards.includes(card));
-    renderHand('bottom', true);
-    document.getElementById('played-bottom').innerText = cards.join(', ');
-
-    currentTurn = 1;
-    setTimeout(machinePlay, 1500);
-  }
-
-  function machinePlay() {
-    const playerId = turnOrder[currentTurn];
-    const hand = players[playerId];
-    if (hand.length === 0) {
-      currentTurn = (currentTurn + 1) % 4;
-      setTimeout(machinePlay, 1000);
-      return;
-    }
-
-    const selectedCard = hand[0];
-    console.log(`🂠 Máy ${playerId} đánh: ${selectedCard}`);
-    players[playerId] = hand.slice(1);
-    document.getElementById(`played-${playerId}`).innerText = selectedCard;
-
-    renderHand(playerId);
-
-    currentTurn = (currentTurn + 1) % 4;
-    if (playerId !== 'bottom') {
-      setTimeout(machinePlay, 1500);
-    }
-  }
+['top','left','right','bottom'].forEach(p => renderHand(p, p==='bottom'));
 </script>
-
 </body>
 </html>
