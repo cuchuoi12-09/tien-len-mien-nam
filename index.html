@@ -72,6 +72,8 @@
   </style>
 </head>
 <body>
+  <audio id="cardSound" src="https://www.soundjay.com/misc/sounds/card-flip-1.mp3" preload="auto"></audio>
+
   <div class="table">
     <div class="player" style="grid-area: top;">
       <div class="name">AI LINH</div>
@@ -136,10 +138,9 @@
 
     function playCards() {
       const selected = Array.from(document.querySelectorAll('#hand-bottom .card.selected'));
-      if (selected.length === 0) return alert('Chọn bài trước');
+      if (selected.length === 0) return;
 
       const cards = selected.map(c => c.innerText);
-      alert('Bạn đánh: ' + cards.join(', '));
 
       players.bottom = players.bottom.filter(c => !cards.includes(c));
       renderHand('bottom', true);
@@ -152,6 +153,8 @@
         div.innerText = card;
         center.appendChild(div);
       }
+
+      document.getElementById('cardSound').play();
 
       currentTurn = 1;
       setTimeout(machinePlay, 1500);
@@ -166,7 +169,6 @@
       const hand = players[id];
       if (hand.length === 0) return;
 
-      // AI đánh bài hợp lệ: lấy bài nhỏ nhất (có thể nâng cấp theo luật)
       const card = hand[0];
 
       players[id] = hand.slice(1);
@@ -178,6 +180,8 @@
       div.className = 'card';
       div.innerText = card;
       center.appendChild(div);
+
+      document.getElementById('cardSound').play();
 
       currentTurn = (currentTurn + 1) % 4;
       if (turnOrder[currentTurn] !== 'bottom') {
