@@ -2,13 +2,15 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Tiến Lên L\xean Miền Nam - 4 Người Chơi</title>
+  <title>Tiến Lên Miền Nam - Web</title>
   <style>
     body {
-      margin: 0;
-      font-family: Arial;
       background-color: green;
+      font-family: Arial;
       color: white;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
     }
     .table {
       display: grid;
@@ -16,16 +18,16 @@
         "top top top"
         "left center right"
         "bottom bottom bottom";
-      grid-template-rows: 1fr 3fr 1fr;
+      grid-template-rows: 1fr 2fr 1fr;
       grid-template-columns: 1fr 2fr 1fr;
       height: 100vh;
       gap: 10px;
-      padding: 10px;
     }
     .player {
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
     }
     .hand {
       display: flex;
@@ -33,126 +35,123 @@
       justify-content: center;
     }
     .card {
-      width: 60px;
-      height: 90px;
+      width: 50px;
+      height: 80px;
       background: white;
       color: black;
-      border-radius: 6px;
-      margin: 3px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       font-weight: bold;
+      font-size: 18px;
+      margin: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
     }
     .card.selected {
-      transform: translateY(-20px);
-      box-shadow: 0 0 8px yellow;
+      transform: translateY(-15px);
+      box-shadow: 0 0 10px yellow;
     }
-    .card.back {
-      background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Card_back_01.svg/120px-Card_back_01.svg.png') no-repeat center/cover;
-      color: transparent;
-    }
-    #played-cards {
+    .center-area {
+      grid-area: center;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      flex-wrap: wrap;
-      font-size: 24px;
-      margin-bottom: 10px;
+      justify-content: center;
     }
     button {
-      padding: 10px 20px;
-      font-size: 18px;
+      margin-top: 10px;
+      padding: 8px 16px;
+      font-size: 16px;
       background: orange;
+      color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div id="played-cards"></div>
   <div class="table">
-    <div class="player" style="grid-area: top;">
-      <div>Máy 1</div>
+    <div class="player" style="grid-area: top">
+      <div id="played-top"></div>
       <div class="hand" id="hand-top"></div>
+      Máy 1
     </div>
-    <div class="player" style="grid-area: left;">
-      <div>Máy 2</div>
+    <div class="player" style="grid-area: left">
+      <div id="played-left"></div>
       <div class="hand" id="hand-left"></div>
+      Máy 2
     </div>
-    <div class="player" style="grid-area: right;">
-      <div>Máy 3</div>
+    <div class="center-area">
+      <div id="played-center"></div>
+    </div>
+    <div class="player" style="grid-area: right">
+      <div id="played-right"></div>
       <div class="hand" id="hand-right"></div>
+      Máy 3
     </div>
-    <div class="player" style="grid-area: bottom;">
-      <div>Bạn</div>
+    <div class="player" style="grid-area: bottom">
+      <div id="played-bottom"></div>
       <div class="hand" id="hand-bottom"></div>
+      Bạn
       <button onclick="playCards()">Đánh bài</button>
     </div>
   </div>
 
-<script>
-const suits = ['♠', '♥', '♦', '♣'];
-const ranks = ['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
-let deck = [];
-for (let s of suits) for (let r of ranks) deck.push(r + s);
-deck.sort(() => Math.random() - 0.5);
+  <script>
+    const suits = ['♠', '♥', '♦', '♣'];
+    const ranks = ['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
+    const deck = [];
+    suits.forEach(s => ranks.forEach(r => deck.push(r + s)));
+    deck.sort(() => Math.random() - 0.5);
 
-const players = {
-  top: deck.slice(0, 13),
-  left: deck.slice(13, 26),
-  right: deck.slice(26, 39),
-  bottom: deck.slice(39, 52)
-};
+    const players = {
+      top: deck.slice(0, 13),
+      left: deck.slice(13, 26),
+      right: deck.slice(26, 39),
+      bottom: deck.slice(39, 52)
+    };
 
-const turnOrder = ['bottom', 'left', 'top', 'right'];
-let currentTurn = 0;
-
-function renderHand(player, isPlayer = false) {
-  const div = document.getElementById('hand-' + player);
-  div.innerHTML = '';
-  players[player].forEach(card => {
-    const c = document.createElement('div');
-    c.className = 'card' + (!isPlayer ? ' back' : '');
-    if (isPlayer) {
-      c.innerText = card;
-      c.onclick = () => c.classList.toggle('selected');
+    function renderHand(playerId, isPlayer = false) {
+      const handDiv = document.getElementById('hand-' + playerId);
+      handDiv.innerHTML = '';
+      players[playerId].forEach(card => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        if (isPlayer) {
+          div.innerText = card;
+          div.onclick = () => div.classList.toggle('selected');
+        } else {
+          div.innerText = '';
+          div.classList.add('back');
+        }
+        handDiv.appendChild(div);
+      });
     }
-    div.appendChild(c);
-  });
-}
 
-function updatePlayed(player, card) {
-  document.getElementById('played-cards').innerText = `${player}: ${card}`;
-}
+    function updatePlayed(playerId, cardText) {
+      document.getElementById('played-' + playerId).innerText = cardText;
+      document.getElementById('played-center').innerText = cardText;
+    }
 
-function playCards() {
-  const selected = Array.from(document.querySelectorAll('#hand-bottom .selected'));
-  if (selected.length === 0) return alert("Chọn bài trước!");
-  const cards = selected.map(c => c.innerText);
-  alert("Bạn đánh: " + cards.join(', '));
-  players.bottom = players.bottom.filter(c => !cards.includes(c));
-  renderHand('bottom', true);
-updatePlayed('Bạn', cards.join(', '));
-  currentTurn = 1;
-  setTimeout(machinePlay, 1500);
-}
+    function playCards() {
+      const selected = document.querySelectorAll('#hand-bottom .card.selected');
+      if (selected.length === 0) return alert('Chọn bài trước');
 
-function machinePlay() {
-  const playerId = turnOrder[currentTurn];
-  const hand = players[playerId];
-  if (hand.length === 0) return;
-  const card = hand[0];
-  updatePlayed(playerId, card);
-  players[playerId] = hand.slice(1);
-  renderHand(playerId);
-  currentTurn = (currentTurn + 1) % 4;
-  if (playerId !== 'bottom') setTimeout(machinePlay, 1500);
-}
+      const cards = Array.from(selected).map(c => c.innerText);
+      alert("Bạn đánh: " + cards.join(', '));
 
-['top','left','right','bottom'].forEach(p => renderHand(p, p==='bottom'));
-</script>
+      players.bottom = players.bottom.filter(c => !cards.includes(c));
+      renderHand('bottom', true);
+      updatePlayed('bottom', cards.join(', '));
+    }
+
+    // Khởi tạo tất cả tay bài
+    renderHand('top');
+    renderHand('left');
+    renderHand('right');
+    renderHand('bottom', true);
+  </script>
 </body>
 </html>
