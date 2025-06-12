@@ -150,6 +150,95 @@
       }
       alert("Bạn đánh: " + cards.join(', '));
     }
-  </script>
+  <script>
+  const suits = ['♠', '♥', '♦', '♣'];
+  const ranks = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
+  let deck = [];
+
+  // Tạo bộ bài
+  for (let suit of suits) {
+    for (let rank of ranks) {
+      deck.push(`${rank}${suit}`);
+    }
+  }
+
+  deck.sort(() => 0.5 - Math.random());
+
+  const players = {
+    top: deck.slice(0, 13),
+    left: deck.slice(13, 26),
+    right: deck.slice(26, 39),
+    bottom: deck.slice(39, 52).sort((a, b) => ranks.indexOf(a.slice(0, -1)) - ranks.indexOf(b.slice(0, -1)))
+  };
+
+  const turnOrder = ['bottom', 'left', 'top', 'right'];
+  let currentTurn = 0;
+
+  function renderHand(playerId, isPlayer) {
+    const handDiv = document.getElementById(`hand-${playerId}`);
+    handDiv.innerHTML = "";
+    players[playerId].forEach(card => {
+      const div = document.createElement('div');
+      div.className = 'card';
+      if (isPlayer) {
+        div.innerText = card;
+        div.addEventListener('click', () => {
+          div.classList.toggle('selected');
+        });
+      } else {
+        div.classList.add('back');
+        div.innerText = 'X';
+      }
+      handDiv.appendChild(div);
+    });
+  }
+
+  renderHand('top', false);
+  renderHand('left', false);
+  renderHand('right', false);
+  renderHand('bottom', true);
+
+  function playCards() {
+    const selected = document.querySelectorAll('#hand-bottom .card.selected');
+    const cards = Array.from(selected).map(card => card.innerText);
+    if (cards.length === 0) {
+      alert("Bạn chưa chọn bài nào!");
+      return;
+    }
+    alert("Bạn đánh: " + cards.join(', '));
+    // Xóa bài đã đánh khỏi tay
+    players.bottom = players.bottom.filter(card => !cards.includes(card));
+    renderHand('bottom', true);
+
+    // Chuyển lượt sang máy
+    currentTurn = 1;
+    setTimeout(machinePlay, 1500);
+  }
+
+  function machinePlay() {
+    const playerId = turnOrder[currentTurn];
+    const hand = players[playerId];
+
+    if (hand.length === 0) {
+      currentTurn = (currentTurn + 1) % 4;
+      setTimeout(machinePlay, 1000);
+      return;
+    }
+
+    // Giả lập: chọn bài đầu tiên
+    const selectedCard = hand[0];
+    console.log(`💻 Máy ${playerId} đánh: ${selectedCard}`);
+
+    // Xoá khỏi tay máy
+    players[playerId] = hand.slice(1);
+
+    // Hiện bài máy trên console (sau này ta sẽ hiện trực tiếp)
+    currentTurn = (currentTurn + 1) % 4;
+
+    if (playerId !== 'bottom') {
+      setTimeout(machinePlay, 1500);
+    }
+  }
+</script>
 </body>
 </html>
