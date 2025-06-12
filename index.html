@@ -135,7 +135,7 @@ function playCards() {
   alert("Bạn đánh: " + cards.join(', '));
   players.bottom = players.bottom.filter(c => !cards.includes(c));
   renderHand('bottom', true);
-  updatePlayed('Bạn', cards.join(', '));
+updatePlayed('Bạn', cards.join(', '));
   currentTurn = 1;
   setTimeout(machinePlay, 1500);
 }
